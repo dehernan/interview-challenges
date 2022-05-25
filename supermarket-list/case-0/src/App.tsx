@@ -6,7 +6,11 @@ import styles from "./App.module.scss";
 import api from "./api";
 
 function App() {
-  const [items, setItems] = useState<Item[] | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+
+  const handleDeleteItem = (itemId: number) => {
+    setItems(items.filter((item) => item.id !== itemId));
+  };
 
   useEffect(() => {
     api.list().then(setItems);
@@ -16,13 +20,13 @@ function App() {
     <main className={styles.main}>
       <h1>Supermarket list</h1>
       <form>
-        <input name="text" type="text" />
+        <input autoFocus name="text" type="text" />
         <button>Add</button>
       </form>
       <ul>
-        {items.map((item) => (
-          <li className={item.completed ? styles.completed : ""}>
-            {item.text} <button>[X]</button>
+        {items?.map((item) => (
+          <li key={item.id} className={item.completed ? styles.completed : ""}>
+            {item.text} <button onClick={() => handleDeleteItem(item.id)}>[X]</button>
           </li>
         ))}
       </ul>

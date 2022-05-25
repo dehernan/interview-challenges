@@ -11,6 +11,7 @@ interface Form extends HTMLFormElement {
 
 function App() {
   const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   function handleToggle(id: Item["id"]) {
     setItems((items) =>
@@ -19,7 +20,11 @@ function App() {
   }
 
   function handleAdd(event: React.ChangeEvent<Form>) {
-    // Should implement
+    event.preventDefault();
+    if (event.target.text.value) {
+      setItems([...items, {id: +new Date(), text: event.target.text.value, completed: false}]);
+      event.target.text.value = "";
+    }
   }
 
   function handleRemove(id: Item["id"]) {
@@ -27,7 +32,10 @@ function App() {
   }
 
   useEffect(() => {
-    api.list().then(setItems);
+    api
+      .list()
+      .then(setItems)
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -37,17 +45,21 @@ function App() {
         <input name="text" type="text" />
         <button>Add</button>
       </form>
-      <ul>
-        {items?.map((item) => (
-          <li
-            key={item.id}
-            className={item.completed ? styles.completed : ""}
-            onClick={() => handleToggle(item.id)}
-          >
-            {item.text} <button onClick={() => handleRemove(item.id)}>[X]</button>
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <span>Loading...</span>
+      ) : (
+        <ul>
+          {items.map((item) => (
+            <li
+              key={item.id}
+              className={item.completed ? styles.completed : ""}
+              onClick={() => handleToggle(item.id)}
+            >
+              {item.text} <button onClick={() => handleRemove(item.id)}>[X]</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   );
 }
